@@ -120,8 +120,12 @@ class MyFrame(wx.Frame):
 
         config_file = os.path.join(config_path, self.serverdata[self.servercmb.GetValue()] + '_' + self.protocmb.GetValue() + '.ovpn')
         subprocess.Popen(['sudo', os.path.join(self.my_path, 'assets/fix.sh')])
-        self.ovpn = subprocess.Popen(['sudo', 'openvpn', '--auth-nocache', '--config', config_file, '--auth-user-pass', credentials_file], preexec_fn=os.setpgrp)
-
+        try:
+            self.ovpn = subprocess.Popen(['sudo', 'openvpn', '--auth-nocache', '--config', config_file, '--auth-user-pass', credentials_file], preexec_fn=os.setpgrp)
+        except KeyboardInterrupt:
+            pgid = os.getpgid(self.ovpn.pid)
+            subprocess.check_call(['sudo', 'kill', str(pgid)])
+            sys.exit(0)
     def OnDisconnect(self, evt):
         self.connectbtn.Show()
         self.disconnectbtn.Hide()
