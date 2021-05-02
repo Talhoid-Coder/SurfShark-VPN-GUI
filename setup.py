@@ -14,7 +14,8 @@ setuptools.setup(
     include_package_data=True,
     data_files=[
         ('/usr/share/icons/hicolor/scalable/apps', ['surfsharkgui/assets/surfsharkgui.png']),
-        ('/usr/share/applications', ['surfsharkgui/assets/surfsharkgui.desktop'])
+        ('/usr/share/applications', ['surfsharkgui/assets/surfsharkgui.desktop']),
+        ('', ['surfsharkgui/assets/fix.sh'])
     ],
     package_data={
         "": ["assets/*"]
