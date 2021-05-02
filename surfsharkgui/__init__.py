@@ -165,6 +165,7 @@ class MyApp(wx.App):
         return self.__frame
 app = MyApp()
 def sigint_handler(signal, frame):
+    print("\r", end="")    
     print('Killing')
     pgid = app.GetFrame().GetPGID()
     if pgid:
