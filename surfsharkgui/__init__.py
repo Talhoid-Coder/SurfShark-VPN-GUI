@@ -101,7 +101,7 @@ class MyFrame(wx.Frame):
             save = False
         dlg.Destroy()
 
-        dlg = wx.TextEntryDialog(self, 'Enter Your Password','SurfShark Credentials') 
+        dlg = wx.PasswordEntryDialog(self, 'Enter Your Password','SurfShark Credentials') 
 
         if dlg.ShowModal() == wx.ID_OK:
             password = dlg.GetValue()
