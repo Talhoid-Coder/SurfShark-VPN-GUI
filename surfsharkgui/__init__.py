@@ -159,6 +159,7 @@ class MyApp(wx.App):
                 zip_conf.extractall(config_path)
     def GetFrame(self):
         return self.__frame
+app = MyApp()
 def sigint_handler(signal, frame):
     print('Killing')
     pgid = app.GetFrame().GetPGID()
@@ -168,5 +169,4 @@ def sigint_handler(signal, frame):
     else:
         print('Nothing to kill')
 signal.signal(signal.SIGINT, sigint_handler)
-app = MyApp()
 app.MainLoop()
