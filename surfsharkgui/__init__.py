@@ -34,7 +34,7 @@ class MyFrame(wx.Frame):
         servers = list(self.serverdata.keys())
 
         self.servercmb = SlimSelector(self.panel, choices=servers, style=wx.CB_READONLY)
-        self.protocmb = SlimSelector(self.panel, value="udp", choices=['udp','tcp'], style=wx.CB_READONLY)
+        self.protocmb = SlimSelector(self.panel, value="tcp", choices=['udp','tcp'], style=wx.CB_READONLY)
 
         self.credentialsbtn = wx.Button(self.panel, -1, "Enter Credentials")
         self.credentialsbtn.SetBackgroundColour('#ffffff')
