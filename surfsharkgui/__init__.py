@@ -129,8 +129,12 @@ class MyFrame(wx.Frame):
         self.panel.Layout()
         pgid = os.getpgid(self.ovpn.pid)
         subprocess.check_call(['sudo', 'kill', str(pgid)])
-    def GetGPID(self):
-        return os.getpgid(self.ovpn.pid)
+    def GetPGID(self):
+        try:
+            pgid = os.getpgid(self.ovpn.pid)
+        except:
+            return False
+        return pgid
 class MyApp(wx.App):
     def OnInit(self):
         self.__frame = MyFrame(None, "SurfShark VPN GUI")
@@ -158,8 +162,11 @@ class MyApp(wx.App):
 app = MyApp()
 def sigint_handler(signal, frame):
     print('Killing')
-    pgid = app.GetFrame().GetGPID()
-    subprocess.check_call(['sudo', 'kill', str(pgid)])
-    sys.exit(0)
+    pgid = app.GetFrame().GetPGID()
+    if pgid:
+        subprocess.check_call(['sudo', 'kill', str(pgid)])
+        sys.exit(0)
+    else:
+        print('Nothing to kill')
 signal.signal(signal.SIGINT, sigint_handler)
 app.MainLoop()
