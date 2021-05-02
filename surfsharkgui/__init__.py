@@ -64,7 +64,7 @@ class MyFrame(wx.Frame):
         sizer.AddSpacer(10)
 
         sizer.Add(self.cdbtn, 0, wx.ALIGN_CENTER, 10)
-
+        self.Bind(wx.EVT_CLOSE, self.OnClose)
         self.panel.SetSizerAndFit(sizer)
         self.panel.Layout()
         self.timer = wx.Timer(self)
@@ -73,14 +73,13 @@ class MyFrame(wx.Frame):
     def OnTimer(self, evt):
         return None
     def OnClose(self, evt):
-        self.Close()
         pgid = self.GetPGID()
         if pgid:
             subprocess.check_call(['sudo', 'kill', str(pgid)])
             sys.exit(0)
         else:
             sys.exit(0)
-
+        evt.skip()
     def OnCredentials(self, evt):
         dlg = wx.MessageDialog(self,
             'Please generate your credentials first at https://account.surfshark.com/setup/manual.',
