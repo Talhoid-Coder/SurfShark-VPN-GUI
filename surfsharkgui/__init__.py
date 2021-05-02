@@ -5,7 +5,7 @@
 # Basic GUI for connecting to surfshark vpn
 #----------------------------------------------------------------------
 
-import requests, os, sys, subprocess, time, wx, zipfile, glob, fnmatch, json
+import requests, os, sys, subprocess, time, wx, zipfile, glob, fnmatch, json, signal
 
 class SlimSelector(wx.ComboBox):
      def __init__(self, *args, **kwargs):
@@ -129,13 +129,14 @@ class MyFrame(wx.Frame):
         self.panel.Layout()
         pgid = os.getpgid(self.ovpn.pid)
         subprocess.check_call(['sudo', 'kill', str(pgid)])
-
+    def GetGPID():
+        return os.getpgid(self.ovpn.pid)
 class MyApp(wx.App):
     def OnInit(self):
-        frame = MyFrame(None, "SurfShark VPN GUI")
-        self.SetTopWindow(frame)
+        self.__frame = MyFrame(None, "SurfShark VPN GUI")
+        self.SetTopWindow(self.__frame)
 
-        frame.Show(True)
+        self.__frame.Show(True)
 
         self.Prep()
         return True
@@ -152,10 +153,12 @@ class MyApp(wx.App):
             open(os.path.join(config_path, 'configurations'), 'wb').write(fileConfs.content)
             with zipfile.ZipFile(os.path.join(config_path, 'configurations'), 'r') as zip_conf:
                 zip_conf.extractall(config_path)
-
+    def GetFrame(self):
+        return self.__frame
 app = MyApp()
-try:
-    app.MainLoop()
-except KeyboardInterrupt:
+def sigint_handler(signal, frame):
+    pgid = app.GetFrame().GetGPID()
     subprocess.check_call(['sudo', 'kill', str(pgid)])
-    exit(0)
+    sys.exit(0)
+signal.signal(signal.SIGINT, sigint_handler)
+app.MainLoop()
