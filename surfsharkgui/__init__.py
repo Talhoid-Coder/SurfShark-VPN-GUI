@@ -157,6 +157,7 @@ class MyApp(wx.App):
         return self.__frame
 app = MyApp()
 def sigint_handler(signal, frame):
+    print('Killing')
     pgid = app.GetFrame().GetGPID()
     subprocess.check_call(['sudo', 'kill', str(pgid)])
     sys.exit(0)
