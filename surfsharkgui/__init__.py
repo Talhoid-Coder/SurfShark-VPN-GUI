@@ -77,7 +77,11 @@ class MyFrame(wx.Frame):
 
         self.panel.SetSizerAndFit(sizer)
         self.panel.Layout()
-
+        self.timer = wx.Timer(self)
+        self.Bind(wx.EVT_TIMER, self.OnTimer, self.timer)
+        self.timer.Start(1000)
+    def OnTimer():
+        return None
     def OnClose(self, evt):
         self.Close()
 
