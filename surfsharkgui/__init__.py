@@ -23,7 +23,7 @@ class MyFrame(wx.Frame):
         wx.Frame.__init__(self, parent, -1, title, size=(600, 720))
         self.my_path = os.path.abspath(os.path.dirname(__file__))
         self.CreateStatusBar()
-
+        self.state = 0
         self.panel = wx.Panel(self)
 
         config_path = os.path.expanduser('~/.surfshark/configs')
@@ -40,20 +40,13 @@ class MyFrame(wx.Frame):
         self.credentialsbtn.SetBackgroundColour('#ffffff')
         self.credentialsbtn.SetForegroundColour('#00d18a')
 
-        self.connectbtn = wx.Button(self.panel, -1, "Quick Connect")
-        self.connectbtn.SetBackgroundColour('#00d18a')
-        self.connectbtn.SetForegroundColour('#ffffff')
-
-        self.disconnectbtn = wx.Button(self.panel, -1, "Disconnect")
-        self.disconnectbtn.SetBackgroundColour('#ffffff')
-        self.disconnectbtn.SetForegroundColour('#00d18a')
+        self.cdbtn = wx.Button(self.panel, -1, "Quick Connect")
+        self.cdbtn.SetBackgroundColour('#00d18a')
+        self.cdbtn.SetForegroundColour('#ffffff')
 
         logoimg = wx.Image(os.path.join(self.my_path, 'assets/surfsharkgui.png'), wx.BITMAP_TYPE_ANY)
         logoimgBmp = wx.StaticBitmap(self.panel, wx.ID_ANY, wx.Bitmap(logoimg))
-
-        self.Bind(wx.EVT_BUTTON, self.OnCredentials, self.credentialsbtn)
-        self.Bind(wx.EVT_BUTTON, self.OnConnect, self.connectbtn)
-        self.Bind(wx.EVT_BUTTON, self.OnDisconnect, self.disconnectbtn)
+        self.Bind(wx.EVT_BUTTON, self.OnConnectDisconnect, self.cdbtn)
         
         sizer = wx.BoxSizer(wx.VERTICAL)
 
@@ -70,10 +63,7 @@ class MyFrame(wx.Frame):
         sizer.Add(hsizer, 0, wx.ALIGN_CENTER, 10)
         sizer.AddSpacer(10)
 
-        sizer.Add(self.connectbtn, 0, wx.ALIGN_CENTER, 10)
-        sizer.Add(self.disconnectbtn, 0, wx.ALIGN_CENTER, 10)
-
-        self.disconnectbtn.Hide()
+        sizer.Add(self.cdbtn, 0, wx.ALIGN_CENTER, 10)
 
         self.panel.SetSizerAndFit(sizer)
         self.panel.Layout()
@@ -120,25 +110,27 @@ class MyFrame(wx.Frame):
             with open(credentials_file, 'w') as fw:
                 fw.write(username + '\n' + password + '\n')
 
-    def OnConnect(self, evt):
-        self.disconnectbtn.Show()
-        self.connectbtn.Hide()
-        self.panel.Layout()
+    def OnConnectDisconnect(self, evt):
+        if self.state == 0:
+            evt.GetEventObject().SetLabel('Disconnect')
+            evt.GetEventObject().SetBackgroundColour('#ffffff')
+            evt.GetEventObject().SetForegroundColour('#00d18a')            
+            config_path = os.path.expanduser('~/.surfshark/configs')
+            credentials_file = os.path.join(config_path, 'credentials')
 
-        config_path = os.path.expanduser('~/.surfshark/configs')
-        credentials_file = os.path.join(config_path, 'credentials')
-
-        config_file = os.path.join(config_path, self.serverdata[self.servercmb.GetValue()] + '_' + self.protocmb.GetValue() + '.ovpn')
-        subprocess.Popen(['sudo', os.path.join(self.my_path, 'assets/fix.sh')])
-        self.ovpn = subprocess.Popen(['sudo', 'openvpn', '--auth-nocache', '--config', config_file, '--auth-user-pass', credentials_file], preexec_fn=os.setpgrp)
-        global pgid
-        pgid = os.getpgid(self.ovpn.pid)
-    def OnDisconnect(self, evt):
-        self.connectbtn.Show()
-        self.disconnectbtn.Hide()
+            config_file = os.path.join(config_path, self.serverdata[self.servercmb.GetValue()] + '_' + self.protocmb.GetValue() + '.ovpn')
+            subprocess.Popen(['sudo', os.path.join(self.my_path, 'assets/fix.sh')])
+            self.ovpn = subprocess.Popen(['sudo', 'openvpn', '--auth-nocache', '--config', config_file, '--auth-user-pass', credentials_file], preexec_fn=os.setpgrp)
+            pgid = os.getpgid(self.ovpn.pid)
+            self.state = 1
+        else:
+            evt.GetEventObject().SetLabel('Quick Connect')
+            evt.GetEventObject().SetBackgroundColour('#00d18a')
+            evt.GetEventObject().SetForegroundColour('#ffffff')
+            pgid = os.getpgid(self.ovpn.pid)
+            subprocess.check_call(['sudo', 'kill', str(pgid)])
+            self.state = 0
         self.panel.Layout()
-        pgid = os.getpgid(self.ovpn.pid)
-        subprocess.check_call(['sudo', 'kill', str(pgid)])
     def GetPGID(self):
         try:
             pgid = os.getpgid(self.ovpn.pid)
