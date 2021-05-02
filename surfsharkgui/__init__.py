@@ -120,17 +120,13 @@ class MyFrame(wx.Frame):
 
         config_file = os.path.join(config_path, self.serverdata[self.servercmb.GetValue()] + '_' + self.protocmb.GetValue() + '.ovpn')
         subprocess.Popen(['sudo', os.path.join(self.my_path, 'assets/fix.sh')])
-        try:
-            self.ovpn = subprocess.Popen(['sudo', 'openvpn', '--auth-nocache', '--config', config_file, '--auth-user-pass', credentials_file], preexec_fn=os.setpgrp)
-        except KeyboardInterrupt:
-            pgid = os.getpgid(self.ovpn.pid)
-            subprocess.check_call(['sudo', 'kill', str(pgid)])
-            exit(0)
+        self.ovpn = subprocess.Popen(['sudo', 'openvpn', '--auth-nocache', '--config', config_file, '--auth-user-pass', credentials_file], preexec_fn=os.setpgrp)
+        global pgid
+        pgid = os.getpgid(self.ovpn.pid)
     def OnDisconnect(self, evt):
         self.connectbtn.Show()
         self.disconnectbtn.Hide()
         self.panel.Layout()
-
         pgid = os.getpgid(self.ovpn.pid)
         subprocess.check_call(['sudo', 'kill', str(pgid)])
 
@@ -158,4 +154,8 @@ class MyApp(wx.App):
                 zip_conf.extractall(config_path)
 
 app = MyApp()
-app.MainLoop()
+try:
+    app.MainLoop()
+except KeyboardInterrupt:
+    subprocess.check_call(['sudo', 'kill', str(pgid)])
+    exit(0)
