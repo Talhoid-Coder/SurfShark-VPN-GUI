@@ -7,25 +7,37 @@
 
 import requests, os, sys, subprocess, time, wx, zipfile, glob, fnmatch, json
 
+class SlimSelector(wx.ComboBox):
+     def __init__(self, *args, **kwargs):
+         wx.ComboBox.__init__(self, *args, **kwargs)
+         choices = self.GetStrings()
+         if choices:
+             width, height = self.GetSize()
+             dc = wx.ClientDC(self)
+             tsize = max(dc.GetTextExtent(c)[0] for c in choices)
+             print ('SlimSelector optimum:', tsize)
+             self.SetMinSize((tsize+75, height))
+
 class MyFrame(wx.Frame):
     def __init__(self, parent, title):
-        wx.Frame.__init__(self, parent, -1, title, size=(300, 420))
+        wx.Frame.__init__(self, parent, -1, title, size=(600, 840))
+        my_path = os.path.abspath(os.path.dirname(__file__))
 
+        icon = wx.Icon(os.path.join(my_path, 'assets/surfsharkgui.png'), wx.BITMAP_TYPE_ANY)
+        self.SetIcon(icon)
         self.CreateStatusBar()
 
         self.panel = wx.Panel(self)
 
         config_path = os.path.expanduser('~/.surfshark/configs')
 
-        my_path = os.path.abspath(os.path.dirname(__file__))
-
         with open(os.path.join(my_path, 'assets/servers.json')) as s:
             self.serverdata = json.load(s)
 
         servers = list(self.serverdata.keys())
 
-        self.servercmb = wx.ComboBox(self.panel, choices=servers)
-        self.protocmb = wx.ComboBox(self.panel, value="udp", choices=['udp','tcp'])
+        self.servercmb = SlimSelector(self.panel, choices=servers, style=wx.CB_READONLY)
+        self.protocmb = SlimSelector(self.panel, value="udp", choices=['udp','tcp'], style=wx.CB_READONLY)
 
         self.credentialsbtn = wx.Button(self.panel, -1, "Enter Credentials")
         self.credentialsbtn.SetBackgroundColour('#ffffff')
@@ -110,7 +122,7 @@ class MyFrame(wx.Frame):
         credentials_file = os.path.join(config_path, 'credentials')
 
         config_file = os.path.join(config_path, self.serverdata[self.servercmb.GetValue()] + '_' + self.protocmb.GetValue() + '.ovpn')
-
+        
         self.ovpn = subprocess.Popen(['sudo', 'openvpn', '--auth-nocache', '--config', config_file, '--auth-user-pass', credentials_file], preexec_fn=os.setpgrp)
 
     def OnDisconnect(self, evt):
