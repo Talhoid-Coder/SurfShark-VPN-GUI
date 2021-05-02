@@ -48,7 +48,7 @@ class MyFrame(wx.Frame):
         self.disconnectbtn.SetBackgroundColour('#ffffff')
         self.disconnectbtn.SetForegroundColour('#00d18a')
 
-        logoimg = wx.Image(os.path.join(my_path, 'assets/surfsharkgui.png'), wx.BITMAP_TYPE_ANY)
+        logoimg = wx.Image(os.path.join(self.my_path, 'assets/surfsharkgui.png'), wx.BITMAP_TYPE_ANY)
         logoimgBmp = wx.StaticBitmap(self.panel, wx.ID_ANY, wx.Bitmap(logoimg))
 
         self.Bind(wx.EVT_BUTTON, self.OnCredentials, self.credentialsbtn)
