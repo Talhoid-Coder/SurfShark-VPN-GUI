@@ -129,7 +129,7 @@ class MyFrame(wx.Frame):
         self.panel.Layout()
         pgid = os.getpgid(self.ovpn.pid)
         subprocess.check_call(['sudo', 'kill', str(pgid)])
-    def GetGPID():
+    def GetGPID(self):
         return os.getpgid(self.ovpn.pid)
 class MyApp(wx.App):
     def OnInit(self):
