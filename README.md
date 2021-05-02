@@ -1,5 +1,8 @@
 # SurfShark VPN GUI
 
+### Important!
+This fork is more ideal for a remote server
+
 A GUI client for connecting to the SurfShark VPN.
 
 ![surfshark-vpn-gui](https://user-images.githubusercontent.com/554899/79762280-8f876b00-82f0-11ea-9d4a-e050498f8bc7.png)
