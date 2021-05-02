@@ -125,7 +125,7 @@ class MyFrame(wx.Frame):
         except KeyboardInterrupt:
             pgid = os.getpgid(self.ovpn.pid)
             subprocess.check_call(['sudo', 'kill', str(pgid)])
-            sys.exit(0)
+            exit(0)
     def OnDisconnect(self, evt):
         self.connectbtn.Show()
         self.disconnectbtn.Hide()
