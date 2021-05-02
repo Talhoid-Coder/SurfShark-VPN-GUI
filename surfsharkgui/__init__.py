@@ -21,17 +21,14 @@ class SlimSelector(wx.ComboBox):
 class MyFrame(wx.Frame):
     def __init__(self, parent, title):
         wx.Frame.__init__(self, parent, -1, title, size=(600, 840))
-        my_path = os.path.abspath(os.path.dirname(__file__))
-
-        icon = wx.Icon(os.path.join(my_path, 'assets/surfsharkgui.png'), wx.BITMAP_TYPE_ANY)
-        self.SetIcon(icon)
+        self.my_path = os.path.abspath(os.path.dirname(__file__))
         self.CreateStatusBar()
 
         self.panel = wx.Panel(self)
 
         config_path = os.path.expanduser('~/.surfshark/configs')
 
-        with open(os.path.join(my_path, 'assets/servers.json')) as s:
+        with open(os.path.join(self.my_path, 'assets/servers.json')) as s:
             self.serverdata = json.load(s)
 
         servers = list(self.serverdata.keys())
@@ -122,7 +119,7 @@ class MyFrame(wx.Frame):
         credentials_file = os.path.join(config_path, 'credentials')
 
         config_file = os.path.join(config_path, self.serverdata[self.servercmb.GetValue()] + '_' + self.protocmb.GetValue() + '.ovpn')
-        subprocess.check_call('sudo ' + os.path.join(my_path, 'assets/fix.sh'))
+        subprocess.check_call('sudo ' + os.path.join(self.my_path, 'assets/fix.sh'))
         self.ovpn = subprocess.Popen(['sudo', 'openvpn', '--auth-nocache', '--config', config_file, '--auth-user-pass', credentials_file], preexec_fn=os.setpgrp)
 
     def OnDisconnect(self, evt):
