@@ -20,7 +20,7 @@ class SlimSelector(wx.ComboBox):
 
 class MyFrame(wx.Frame):
     def __init__(self, parent, title):
-        wx.Frame.__init__(self, parent, -1, title, size=(600, 840))
+        wx.Frame.__init__(self, parent, -1, title, size=(600, 720))
         self.my_path = os.path.abspath(os.path.dirname(__file__))
         self.CreateStatusBar()
 
@@ -84,6 +84,12 @@ class MyFrame(wx.Frame):
         return None
     def OnClose(self, evt):
         self.Close()
+        pgid = self.GetPGID()
+        if pgid:
+            subprocess.check_call(['sudo', 'kill', str(pgid)])
+            sys.exit(0)
+        else:
+            sys.exit(0)
 
     def OnCredentials(self, evt):
         dlg = wx.MessageDialog(self,
@@ -166,12 +172,12 @@ class MyApp(wx.App):
 app = MyApp()
 def sigint_handler(signal, frame):
     print("\r", end="")    
-    print('Killing')
+    print("Killing")
     pgid = app.GetFrame().GetPGID()
     if pgid:
         subprocess.check_call(['sudo', 'kill', str(pgid)])
         sys.exit(0)
     else:
-        print('Nothing to kill')
+        sys.exit(0)
 signal.signal(signal.SIGINT, sigint_handler)
 app.MainLoop()
