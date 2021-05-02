@@ -5,7 +5,7 @@
 # Basic GUI for connecting to surfshark vpn
 #----------------------------------------------------------------------
 
-import requests, os, sys, subprocess, time, wx, zipfile, glob, fnmatch, json, threading
+import requests, os, sys, subprocess, time, wx, zipfile, glob, fnmatch, json, signal
 
 class SlimSelector(wx.ComboBox):
      def __init__(self, *args, **kwargs):
