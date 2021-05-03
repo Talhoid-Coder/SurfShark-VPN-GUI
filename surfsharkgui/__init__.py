@@ -5,8 +5,12 @@
 # Basic GUI for connecting to surfshark vpn
 #----------------------------------------------------------------------
 
-import requests, os, sys, subprocess, time, wx, zipfile, glob, fnmatch, json, signal
+import requests, os, sys, subprocess, time, wx, zipfile, glob, fnmatch, json, signal, threading
 
+def popup_loader(loader, title='', body=''):
+    while True:
+        for icon in loader:
+            subprocess.Popen(f'gdbus call --session --dest org.freedesktop.Notifications --object-path /org/freedesktop/Notifications --method org.freedesktop.Notifications.Notify my_app_name 42 {icon} "{title}" "{body}" [] {} 20  | sed "s/[^ ]* //; s/,.//"', shell=True)
 class SlimSelector(wx.ComboBox):
      def __init__(self, *args, **kwargs):
          wx.ComboBox.__init__(self, *args, **kwargs)
@@ -110,6 +114,8 @@ class MyFrame(wx.Frame):
                 fw.write(username + '\n' + password + '\n')
 
     def OnConnectDisconnect(self, evt):
+        loader = ['network-wireless-signal-excellent', 'network-wireless-signal-good', 'network-wireless-signal-ok', 'network-wireless-signal-weak', 'network-wireless-signal-none']
+        loader.reverse()
         if self.state == 0:
             evt.GetEventObject().SetLabel('Disconnect')
             evt.GetEventObject().SetBackgroundColour('#ffffff')
@@ -119,6 +125,9 @@ class MyFrame(wx.Frame):
 
             config_file = os.path.join(config_path, self.serverdata[self.servercmb.GetValue()] + '_' + self.protocmb.GetValue() + '.ovpn')
             subprocess.Popen(['sudo', os.path.join(self.my_path, 'assets/fix.sh')])
+            loader_thread = threading.Thread(target=popup_loader, args=(loader, 'Surfshark', 'Activating VPN'))
+            loader_thread.daemon = True
+            loader_thread.start()
             self.ovpn = subprocess.Popen(['sudo', 'openvpn', '--auth-nocache', '--config', config_file, '--auth-user-pass', credentials_file], preexec_fn=os.setpgrp)
             pgid = os.getpgid(self.ovpn.pid)
             self.state = 1
