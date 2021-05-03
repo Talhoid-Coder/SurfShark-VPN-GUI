@@ -11,6 +11,7 @@ def popup_loader(loader, title='', body=''):
     while True:
         for icon in loader:
             subprocess.Popen(f'gdbus call --session --dest org.freedesktop.Notifications --object-path /org/freedesktop/Notifications --method org.freedesktop.Notifications.Notify my_app_name 42 {icon} "{title}" "{body}" [] {{}} 20  | sed "s/[^ ]* //; s/,.//"', shell=True)
+            time.sleep(0.4)
 class SlimSelector(wx.ComboBox):
      def __init__(self, *args, **kwargs):
          wx.ComboBox.__init__(self, *args, **kwargs)
