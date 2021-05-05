@@ -8,9 +8,11 @@
 import requests, os, sys, subprocess, time, wx, zipfile, glob, fnmatch, json, signal, threading
 
 def popup_loader(loader, title='', body=''):
+    first_id = subprocess.Popen('notify-send "" ""', shell=True, stdout=subprocess.PIPE)
+    first_id = first_id.stdout.read().decode().rstrip('\n')
     while True:
         for icon in loader:
-            subprocess.Popen(f'gdbus call --session --dest org.freedesktop.Notifications --object-path /org/freedesktop/Notifications --method org.freedesktop.Notifications.Notify my_app_name 42 {icon} "{title}" "{body}" [] {{}} 20  | sed "s/[^ ]* //; s/,.//"', shell=True)
+            popup = subprocess.Popen(f'notify-send -i {icon} "{title}" "{body}" -t 1 -r {first_id}', shell=True, stdout=subprocess.PIPE)a
             time.sleep(0.4)
 class SlimSelector(wx.ComboBox):
      def __init__(self, *args, **kwargs):
