@@ -15,8 +15,9 @@ first_id = first_id.stdout.read().decode().rstrip('\n')
 def connection_done(ovpn, loader_thread, evt):
     while True:
         ovpn_stdout = ovpn.stdout.read().decode()
-            if 'Initialization Sequence Completed' in ovpn_stdout:
-                break
+        time.sleep(0.3)
+        if 'Initialization Sequence Completed' in ovpn_stdout:
+            break
     loader_thread.stop()
     subprocess.Popen(f'notify-send -i network-wireless-signal-excellent "Surfshark" "VPN Activated!" -t 1 -r {first_id}', shell=True, stdout=subprocess.PIPE)
     evt.GetEventObject().SetLabel('Disconnect')
