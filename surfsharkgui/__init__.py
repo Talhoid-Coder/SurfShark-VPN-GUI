@@ -7,13 +7,31 @@
 
 import requests, os, sys, subprocess, time, wx, zipfile, glob, fnmatch, json, signal, threading
 
+
+first_id = subprocess.Popen('notify-send "" ""', shell=True, stdout=subprocess.PIPE)
+first_id = first_id.stdout.read().decode().rstrip('\n')
+
+
+class StoppableThread(threading.Thread):
+    """Thread class with a stop() method. The thread itself has to check
+    regularly for the stopped() condition."""
+
+    def __init__(self,  *args, **kwargs):
+        super(StoppableThread, self).__init__(*args, **kwargs)
+        self._stop_event = threading.Event()
+
+    def stop(self):
+        self._stop_event.set()
+
+    def stopped(self):
+        return self._stop_event.is_set()
+
 def popup_loader(loader, title='', body=''):
-    first_id = subprocess.Popen('notify-send "" ""', shell=True, stdout=subprocess.PIPE)
-    first_id = first_id.stdout.read().decode().rstrip('\n')
     while True:
         for icon in loader:
             popup = subprocess.Popen(f'notify-send -i {icon} "{title}" "{body}" -t 1 -r {first_id}', shell=True, stdout=subprocess.PIPE)
             time.sleep(0.4)
+
 class SlimSelector(wx.ComboBox):
      def __init__(self, *args, **kwargs):
          wx.ComboBox.__init__(self, *args, **kwargs)
@@ -120,19 +138,28 @@ class MyFrame(wx.Frame):
         loader = ['network-wireless-signal-excellent', 'network-wireless-signal-good', 'network-wireless-signal-ok', 'network-wireless-signal-weak', 'network-wireless-signal-none']
         loader.reverse()
         if self.state == 0:
-            evt.GetEventObject().SetLabel('Disconnect')
-            evt.GetEventObject().SetBackgroundColour('#ffffff')
-            evt.GetEventObject().SetForegroundColour('#00d18a')            
+            evt.GetEventObject().SetLabel('Connecting...')
+            evt.GetEventObject().SetBackgroundColour('#80E8C5')
+            evt.GetEventObject().SetForegroundColour('#ffffff')
             config_path = os.path.expanduser('~/.surfshark/configs')
             credentials_file = os.path.join(config_path, 'credentials')
 
             config_file = os.path.join(config_path, self.serverdata[self.servercmb.GetValue()] + '_' + self.protocmb.GetValue() + '.ovpn')
             subprocess.Popen(['sudo', os.path.join(self.my_path, 'assets/fix.sh')])
-            loader_thread = threading.Thread(target=popup_loader, args=(loader, 'Surfshark', 'Activating VPN'))
+            loader_thread = StoppableThread(target=popup_loader, args=(loader, 'Surfshark', 'Activating VPN'))
             loader_thread.daemon = True
             loader_thread.start()
-            self.ovpn = subprocess.Popen(['sudo', 'openvpn', '--auth-nocache', '--config', config_file, '--auth-user-pass', credentials_file], preexec_fn=os.setpgrp)
+            self.ovpn = subprocess.Popen(['sudo', 'openvpn', '--auth-nocache', '--config', config_file, '--auth-user-pass', credentials_file], preexec_fn=os.setpgrp, stdout=subprocess.PIPE)
+            ovpn_stdout = self.ovpn.stdout.read().decode()
             pgid = os.getpgid(self.ovpn.pid)
+            while True:
+                if 'Initialization Sequence Completed' in ovpn_stdout:
+                    break
+            loader_thread.stop()
+            subprocess.Popen(f'notify-send -i network-wireless-signal-excellent "Surfshark" "VPN Activated!" -t 1 -r {first_id}', shell=True, stdout=subprocess.PIPE)
+            evt.GetEventObject().SetLabel('Disconnect')
+            evt.GetEventObject().SetBackgroundColour('#ffffff')
+            evt.GetEventObject().SetForegroundColour('#00d18a')
             self.state = 1
         else:
             evt.GetEventObject().SetLabel('Quick Connect')
