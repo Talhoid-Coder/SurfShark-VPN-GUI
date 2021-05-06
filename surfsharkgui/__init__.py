@@ -154,13 +154,6 @@ class MyFrame(wx.Frame):
             print('Connecting')
             while True:
                 ovpn_stdout = self.ovpn.stdout.read().decode()
-                print('.', end='')
-                time.sleep(0.1)
-                print('.', end='')
-                time.sleep(0.1)
-                print('.', end='')
-                time.sleep(0.1)
-                print('\b' * 3, end='')
                 if 'Initialization Sequence Completed' in ovpn_stdout:
                     break
             loader_thread.stop()
