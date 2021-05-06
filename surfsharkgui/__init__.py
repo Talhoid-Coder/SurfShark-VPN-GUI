@@ -150,9 +150,17 @@ class MyFrame(wx.Frame):
             loader_thread.daemon = True
             loader_thread.start()
             self.ovpn = subprocess.Popen(['sudo', 'openvpn', '--auth-nocache', '--config', config_file, '--auth-user-pass', credentials_file], preexec_fn=os.setpgrp, stdout=subprocess.PIPE)
-            ovpn_stdout = self.ovpn.stdout.read().decode()
             pgid = os.getpgid(self.ovpn.pid)
+            print('Connecting')
             while True:
+                ovpn_stdout = self.ovpn.stdout.read().decode()
+                print('.', end='')
+                time.sleep(0.1)
+                print('.', end='')
+                time.sleep(0.1)
+                print('.', end='')
+                time.sleep(0.1)
+                print('\b' * 3, end='')
                 if 'Initialization Sequence Completed' in ovpn_stdout:
                     break
             loader_thread.stop()
