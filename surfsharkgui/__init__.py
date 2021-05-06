@@ -14,7 +14,7 @@ first_id = first_id.stdout.read().decode().rstrip('\n')
 
 def connection_done(ovpn, loader_thread, evt):
     while True:
-        ovpn_stdout = ovpn.stdout.read().decode()
+        ovpn_stdout = ovpn.stdout.readline()
         time.sleep(0.3)
         if 'Initialization Sequence Completed' in ovpn_stdout:
             break
