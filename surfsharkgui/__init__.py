@@ -8,8 +8,13 @@
 import requests, os, sys, subprocess, time, wx, zipfile, glob, fnmatch, json, signal, threading
 
 
-first_id = subprocess.Popen('notify-send "" ""', shell=True, stdout=subprocess.PIPE)
-first_id = first_id.stdout.read().decode().rstrip('\n')
+def connection_done(ovpn, evt):
+    ovpn_stdout = ovpn.stdout.readline()
+    if b'Initialization Sequence Completed' in ovpn_stdout:
+        evt.GetEventObject().SetLabel('Disconnect')
+        evt.GetEventObject().SetBackgroundColour('#ffffff')
+        evt.GetEventObject().SetForegroundColour('#00d18a')
+        exit()
 
 class PeriodicThread(threading.Thread):
 
@@ -24,43 +29,13 @@ class PeriodicThread(threading.Thread):
          while not self.stop_event.is_set():
              self.main()
              # wait self.interval seconds or until the stop_event is set
-             self.stop_event.wait(self.interval)
+             self.stop_event.wait(self.interval)        
 
     def terminate(self):
         self.stop_event.set()
 
     def main(self):
        self.target(*self.args)
-
-
-def connection_done(ovpn, loader_thread, evt):
-    ovpn_stdout = ovpn.stdout.readline()
-    if b'Initialization Sequence Completed' in ovpn_stdout:
-        loader_thread.stop()
-        subprocess.Popen(f'notify-send -i network-wireless-signal-excellent "Surfshark" "VPN Activated!" -t 1 -r {first_id}', shell=True, stdout=subprocess.PIPE)
-        evt.GetEventObject().SetLabel('Disconnect')
-        evt.GetEventObject().SetBackgroundColour('#ffffff')
-        evt.GetEventObject().SetForegroundColour('#00d18a')
-
-class StoppableThread(threading.Thread):
-    """Thread class with a stop() method. The thread itself has to check
-    regularly for the stopped() condition."""
-
-    def __init__(self,  *args, **kwargs):
-        super(StoppableThread, self).__init__(*args, **kwargs)
-        self._stop_event = threading.Event()
-
-    def stop(self):
-        self._stop_event.set()
-
-    def stopped(self):
-        return self._stop_event.is_set()
-
-def popup_loader(loader, title='', body=''):
-    while True:
-        for icon in loader:
-            popup = subprocess.Popen(f'notify-send -i {icon} "{title}" "{body}" -t 1 -r {first_id}', shell=True, stdout=subprocess.PIPE)
-            time.sleep(0.4)
 
 class SlimSelector(wx.ComboBox):
      def __init__(self, *args, **kwargs):
@@ -165,23 +140,17 @@ class MyFrame(wx.Frame):
                 fw.write(username + '\n' + password + '\n')
 
     def OnConnectDisconnect(self, evt):
-        loader = ['network-wireless-signal-excellent', 'network-wireless-signal-good', 'network-wireless-signal-ok', 'network-wireless-signal-weak', 'network-wireless-signal-none']
-        loader.reverse()
         if self.state == 0:
-            evt.GetEventObject().SetLabel('Connecting...')
+            evt.GetEventObject().SetLabel('Connecting')
             evt.GetEventObject().SetBackgroundColour('#80E8C5')
             evt.GetEventObject().SetForegroundColour('#ffffff')
             config_path = os.path.expanduser('~/.surfshark/configs')
             credentials_file = os.path.join(config_path, 'credentials')
-
             config_file = os.path.join(config_path, self.serverdata[self.servercmb.GetValue()] + '_' + self.protocmb.GetValue() + '.ovpn')
             subprocess.Popen(['sudo', os.path.join(self.my_path, 'assets/fix.sh')])
-            loader_thread = StoppableThread(target=popup_loader, args=(loader, 'Surfshark', 'Activating VPN'))
-            loader_thread.daemon = True
-            loader_thread.start()
             self.ovpn = subprocess.Popen(['sudo', 'openvpn', '--auth-nocache', '--config', config_file, '--auth-user-pass', credentials_file], preexec_fn=os.setpgrp, stdout=subprocess.PIPE)
             pgid = os.getpgid(self.ovpn.pid)
-            connection_thread = PeriodicThread(target=connection_done, args=(self.ovpn, loader_thread, evt), interval=0.5)
+            connection_thread = PeriodicThread(target=connection_done, args=(self.ovpn, evt), interval=0.5)
             connection_thread.daemon = True
             connection_thread.start()
             connection_thread.join()
