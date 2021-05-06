@@ -12,7 +12,7 @@ def popup_loader(loader, title='', body=''):
     first_id = first_id.stdout.read().decode().rstrip('\n')
     while True:
         for icon in loader:
-            popup = subprocess.Popen(f'notify-send -i {icon} "{title}" "{body}" -t 1 -r {first_id}', shell=True, stdout=subprocess.PIPE)a
+            popup = subprocess.Popen(f'notify-send -i {icon} "{title}" "{body}" -t 1 -r {first_id}', shell=True, stdout=subprocess.PIPE)
             time.sleep(0.4)
 class SlimSelector(wx.ComboBox):
      def __init__(self, *args, **kwargs):
