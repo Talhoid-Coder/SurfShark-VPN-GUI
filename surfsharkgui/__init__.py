@@ -153,7 +153,6 @@ class MyFrame(wx.Frame):
             connection_thread = PeriodicThread(target=connection_done, args=(self.ovpn, evt), interval=0.5)
             connection_thread.daemon = True
             connection_thread.start()
-            connection_thread.join()
             self.state = 1
         else:
             evt.GetEventObject().SetLabel('Quick Connect')
