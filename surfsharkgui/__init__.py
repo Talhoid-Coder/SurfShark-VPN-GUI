@@ -14,6 +14,7 @@ def connection_done(ovpn, evt):
         evt.GetEventObject().SetLabel('Disconnect')
         evt.GetEventObject().SetBackgroundColour('#ffffff')
         evt.GetEventObject().SetForegroundColour('#00d18a')
+        print('>????')
         exit()
 
 class PeriodicThread(threading.Thread):
