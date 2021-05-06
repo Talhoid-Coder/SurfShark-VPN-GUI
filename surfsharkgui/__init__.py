@@ -5,9 +5,9 @@
 # Basic GUI for connecting to surfshark vpn
 #----------------------------------------------------------------------
 
-import requests, os, sys, subprocess, time, wx, zipfile, glob, fnmatch, json, signal, threading
+import requests, os, sys, subprocess, time, wx, zipfile, glob, fnmatch, json, signal, threading, faulthandler
 
-
+faulthandler.enable()
 def connection_done(ovpn, evt):
     ovpn_stdout = ovpn.stdout.readline()
     if b'Initialization Sequence Completed' in ovpn_stdout:
