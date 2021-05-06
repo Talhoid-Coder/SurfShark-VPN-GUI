@@ -11,10 +11,10 @@ import requests, os, sys, subprocess, time, wx, zipfile, glob, fnmatch, json, si
 first_id = subprocess.Popen('notify-send "" ""', shell=True, stdout=subprocess.PIPE)
 first_id = first_id.stdout.read().decode().rstrip('\n')
 
-class PeriodicThread(Thread):
+class PeriodicThread(threading.Thread):
 
     def __init__(self, interval, target, args):
-        self.stop_event = Event()
+        self.stop_event = threading.Event()
         self.interval = interval
         self.target = target
         self.args = args
