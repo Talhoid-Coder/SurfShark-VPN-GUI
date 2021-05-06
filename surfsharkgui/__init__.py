@@ -8,14 +8,10 @@
 import requests, os, sys, subprocess, time, wx, zipfile, glob, fnmatch, json, signal, threading, faulthandler
 
 faulthandler.enable()
-def connection_done(ovpn, evt):
+def connection_done(ovpn, evt, frame):
     ovpn_stdout = ovpn.stdout.readline()
     if b'Initialization Sequence Completed' in ovpn_stdout:
-        evt.GetEventObject().SetLabel('Disconnect')
-        evt.GetEventObject().SetBackgroundColour('#ffffff')
-        evt.GetEventObject().SetForegroundColour('#00d18a')
-        print('>????')
-        exit()
+        wx.CallAfter(frame.ThreadDone)
 
 class PeriodicThread(threading.Thread):
 
@@ -151,7 +147,7 @@ class MyFrame(wx.Frame):
             subprocess.Popen(['sudo', os.path.join(self.my_path, 'assets/fix.sh')])
             self.ovpn = subprocess.Popen(['sudo', 'openvpn', '--auth-nocache', '--config', config_file, '--auth-user-pass', credentials_file], preexec_fn=os.setpgrp, stdout=subprocess.PIPE)
             pgid = os.getpgid(self.ovpn.pid)
-            connection_thread = PeriodicThread(target=connection_done, args=(self.ovpn, evt), interval=0.5)
+            connection_thread = PeriodicThread(target=connection_done, args=(self.ovpn, evt, self), interval=0.5)
             connection_thread.daemon = True
             connection_thread.start()
             self.state = 1
@@ -163,12 +159,10 @@ class MyFrame(wx.Frame):
             subprocess.check_call(['sudo', 'kill', str(pgid)])
             self.state = 0
         self.panel.Layout()
-    def GetPGID(self):
-        try:
-            pgid = os.getpgid(self.ovpn.pid)
-        except:
-            return False
-        return pgid
+    def ThreadDone(self):
+        evt.GetEventObject().SetLabel('Disconnect')
+        evt.GetEventObject().SetBackgroundColour('#ffffff')
+        evt.GetEventObject().SetForegroundColour('#00d18a')
 class MyApp(wx.App):
     def OnInit(self):
         self.__frame = MyFrame(None, "SurfShark VPN GUI")
