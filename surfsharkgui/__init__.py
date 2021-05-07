@@ -149,7 +149,7 @@ class MyFrame(wx.Frame):
             subprocess.Popen(['sudo', os.path.join(self.my_path, 'assets/fix.sh')])
             self.ovpn = subprocess.Popen(['sudo', 'openvpn', '--auth-nocache', '--config', config_file, '--auth-user-pass', credentials_file], preexec_fn=os.setpgrp, stdout=subprocess.PIPE)
             pgid = os.getpgid(self.ovpn.pid)
-            connection_thread = PeriodicThread(target=self.DoneThread, interval=0.1)
+            connection_thread = PeriodicThread(target=self.DoneThread, interval=0)
             connection_thread.daemon = True
             connection_thread.start()
             self.state = 1
