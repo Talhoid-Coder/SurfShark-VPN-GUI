@@ -165,7 +165,7 @@ class MyFrame(wx.Frame):
             subprocess.check_call(['sudo', 'kill', str(pgid)])
             self.state = 0
         self.panel.Layout()
-    def ThreadDone(self):
+    def ThreadDone(self, evt):
         evt.GetEventObject().SetLabel('Disconnect')
         evt.GetEventObject().SetBackgroundColour('#ffffff')
         evt.GetEventObject().SetForegroundColour('#00d18a')
