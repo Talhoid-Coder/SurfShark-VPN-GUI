@@ -12,6 +12,7 @@ def connection_done(ovpn, evt, frame):
     ovpn_stdout = ovpn.stdout.readline()
     if b'Initialization Sequence Completed' in ovpn_stdout:
         wx.CallAfter(frame.ThreadDone, evt)
+        exit()
 
 class PeriodicThread(threading.Thread):
 
