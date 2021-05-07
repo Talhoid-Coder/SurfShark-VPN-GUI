@@ -6,18 +6,12 @@
 #----------------------------------------------------------------------
 
 import requests, os, sys, subprocess, time, wx, zipfile, glob, fnmatch, json, signal, threading, faulthandler
-orgo = sys.__stdout__
+stdout = sys.__stdout__
 faulthandler.enable()
-def connection_done(ovpn, evt, frame):
-    ovpn_stdout = ovpn.stdout.readline()
-    orgo.write(ovpn_stdout.decode())
-    if b'Initialization Sequence Completed' in ovpn_stdout:
-        frame.ThreadDone(evt)
-        exit()
 
 class PeriodicThread(threading.Thread):
 
-    def __init__(self, interval, target, args):
+    def __init__(self, interval, target, args=()):
         self.stop_event = threading.Event()
         self.interval = interval
         self.target = target
@@ -146,31 +140,39 @@ class MyFrame(wx.Frame):
 
     def OnConnectDisconnect(self, evt):
         if self.state == 0:
-            evt.GetEventObject().SetLabel('Connecting')
-            evt.GetEventObject().SetBackgroundColour('#80E8C5')
-            evt.GetEventObject().SetForegroundColour('#ffffff')
+            self.cdbtn.SetLabel('Connecting')
+            self.cdbtn.SetBackgroundColour('#80E8C5')
+            self.cdbtn.SetForegroundColour('#ffffff')
             config_path = os.path.expanduser('~/.surfshark/configs')
             credentials_file = os.path.join(config_path, 'credentials')
             config_file = os.path.join(config_path, self.serverdata[self.servercmb.GetValue()] + '_' + self.protocmb.GetValue() + '.ovpn')
             subprocess.Popen(['sudo', os.path.join(self.my_path, 'assets/fix.sh')])
             self.ovpn = subprocess.Popen(['sudo', 'openvpn', '--auth-nocache', '--config', config_file, '--auth-user-pass', credentials_file], preexec_fn=os.setpgrp, stdout=subprocess.PIPE)
             pgid = os.getpgid(self.ovpn.pid)
-            connection_thread = PeriodicThread(target=connection_done, args=(self.ovpn, evt, self), interval=0.5)
+            connection_thread = PeriodicThread(target=connection_done, interval=0.5)
             connection_thread.daemon = True
             connection_thread.start()
             self.state = 1
         else:
-            evt.GetEventObject().SetLabel('Quick Connect')
-            evt.GetEventObject().SetBackgroundColour('#00d18a')
-            evt.GetEventObject().SetForegroundColour('#ffffff')
+            self.cdbtn.SetLabel('Quick Connect')
+            self.cdbtn.SetBackgroundColour('#00d18a')
+            self.cdbtn. SetForegroundColour('#ffffff')
             pgid = os.getpgid(self.ovpn.pid)
             subprocess.check_call(['sudo', 'kill', str(pgid)])
             self.state = 0
         self.panel.Layout()
-    def ThreadDone(self, evt):
-        evt.GetEventObject().SetLabel('Disconnect')
-        evt.GetEventObject().SetBackgroundColour('#ffffff')
-        evt.GetEventObject().SetForegroundColour('#00d18a')
+    def ThreadDone(self):
+        self.cdbtn.SetLabel('Disconnect')
+        self.cdbtn.SetBackgroundColour('#ffffff')
+        self.cdbtn.SetForegroundColour('#00d18a')
+    
+    def DoneThread(self):
+        ovpn_stdout = self.ovpn.stdout.readline()
+        stdout.write(ovpn_stdout.decode())
+        if b'Initialization Sequence Completed' in ovpn_stdout:
+            wx.CallAfter(self.cdbtn.SetLabel, 'Disconnect')
+            wx.CallAfter(self.cdbtn.SetBackgroundColour, '#ffffff')
+            wx.CallAfter(self.cdbtn.SetForegroundColour, '#00d18a')
 class MyApp(wx.App):
     def OnInit(self):
         self.__frame = MyFrame(None, "SurfShark VPN GUI")
