@@ -10,7 +10,7 @@ orgo = sys.__stdout__
 faulthandler.enable()
 def connection_done(ovpn, evt, frame):
     ovpn_stdout = ovpn.stdout.readline()
-    orgo.write(ovpn_stdout)
+    orgo.write(ovpn_stdout.decode())
     if b'Initialization Sequence Completed' in ovpn_stdout:
         frame.ThreadDone(evt)
         exit()
