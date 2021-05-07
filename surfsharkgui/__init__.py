@@ -11,7 +11,7 @@ faulthandler.enable()
 def connection_done(ovpn, evt, frame):
     ovpn_stdout = ovpn.stdout.readline()
     if b'Initialization Sequence Completed' in ovpn_stdout:
-        wx.CallAfter(frame.ThreadDone)
+        wx.CallAfter(frame.ThreadDone, evt)
 
 class PeriodicThread(threading.Thread):
 
@@ -99,6 +99,12 @@ class MyFrame(wx.Frame):
         self.timer.Start(10)
     def OnTimer(self, evt):
         return None
+    def GetPGID(self):
+        try:
+            pgid = os.getpgid(self.ovpn.pid)
+        except:
+            pgid = ''
+        return pgid
     def OnClose(self, evt):
         pgid = self.GetPGID()
         if pgid:
