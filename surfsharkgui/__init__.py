@@ -6,7 +6,7 @@
 #----------------------------------------------------------------------
 
 import requests, os, sys, subprocess, time, wx, zipfile, glob, fnmatch, json, signal, threading, faulthandler
-orgo = os.__stdout__
+orgo = sys.__stdout__
 faulthandler.enable()
 def connection_done(ovpn, evt, frame):
     ovpn_stdout = ovpn.stdout.readline()
